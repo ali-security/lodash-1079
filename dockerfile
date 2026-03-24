@@ -1,12 +1,10 @@
 # We use Ubuntu 14.04 because it is contemporaneous with Lodash 2.4.1
 FROM ubuntu:14.04
 
-# Overwrite sources.list completely to point ONLY to old-releases
-RUN echo "deb http://old-releases.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" > /etc/apt/sources.list && \
-    echo "deb http://old-releases.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
-    echo "deb http://old-releases.ubuntu.com/ubuntu/ trusty-security main restricted universe multiverse" >> /etc/apt/sources.list
+# Use ONLY the main trusty archive to avoid 404s on missing update/security sub-directories
+RUN echo "deb http://old-releases.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" > /etc/apt/sources.list
     
-# Ignore expired signatures (Check-Valid-Until=false) and force install
+# Ignore expired signatures and force install
 RUN apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --force-yes \
     wget curl git unzip build-essential python openjdk-7-jre-headless phantomjs \
     && rm -rf /var/lib/apt/lists/*
