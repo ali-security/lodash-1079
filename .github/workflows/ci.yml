@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node_version: ["0.6", "0.8", "0.10"]
+        build: [compat, modern, legacy, mobile]
+        bin: [node]
+        # Map out the custom engine/build combinations from .travis.yml
+        include:
+          - node_version: "0.10"
+            bin: "istanbul"
+            build: "false"
+          - node_version: "0.10"
+            bin: "narwhal"
+            build: "compat"
+          - node_version: "0.10"
+            bin: "narwhal"
+            build: "legacy"
+          - node_version: "0.10"
+            bin: "rhino"
+            build: "compat"
+          - node_version: "0.10"
+            bin: "ringo"
+            build: "compat"
+          - node_version: "0.10"
+            bin: "phantomjs"
+            build: "compat"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+          
+      - name: Build Legacy Docker Image
+        run: docker build -t lodash-legacy .
+        
+      - name: Run Matrix Tests
+        run: |
+          docker run --rm \
+            -e BIN=${{ matrix.bin }} \
+            -e BUILD=${{ matrix.build }} \
+            -e NODE_VER=${{ matrix.node_version }} \
+            lodash-legacy \
+            bash -c "
+              # Setup Node Environment
+              source /usr/local/nvm/nvm.sh
+              nvm use \$NODE_VER
+              
+              # Execute Travis before_install logic (lodash-cli bootstrap)
+              if [ \"\$BUILD\" != 'false' ]; then
+                git clone --depth=10 --branch=master git://github.com/lodash/lodash-cli.git ./node_modules/lodash-cli || true
+                mkdir -p ./node_modules/lodash-cli/node_modules
+                cd ./node_modules/lodash-cli/node_modules/
+                ln -s ../../../ ./lodash
+                cd ../ && npm i . && cd ../../
+                
+                # Build the specified lodash distribution
+                node ./node_modules/lodash-cli/bin/lodash \$BUILD -o ./dist/lodash.\$BUILD.js
+                
+                # Run the tests via the selected binary engine
+                cd ./test
+                \$BIN ./test.js ../dist/lodash.\$BUILD.js
+              fi
+              
+              # Istanbul coverage (specific Travis config edge case)
+              if [ \"\$BIN\" = 'istanbul' ]; then
+                npm i istanbul@\"~0.1.0\" -g
+                istanbul cover -x \"**/vendor/**\" ./test/test.js -- ./dist/lodash.js
+              fi
+            "
