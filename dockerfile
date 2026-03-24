@@ -1,7 +1,7 @@
 # Start from the official ancient Node.10 image. 
 FROM node:0.10
 
-# Globally force curl and wget to ignore SSL errors for all subsequent commands (like nvm)
+# Globally force curl and wget to ignore SSL errors
 RUN echo "insecure" > ~/.curlrc && echo "check-certificate = off" > ~/.wgetrc
 
 # Set baseline environment variables
@@ -33,10 +33,10 @@ RUN mkdir /opt/rhino-1.7R5 \
     && echo '#!/bin/sh\njava -jar /opt/rhino-1.7R5/js.jar $@' > /usr/local/bin/rhino \
     && chmod +x /usr/local/bin/rhino
 
-# Install RingoJS (using Python to unzip since the container lacks 'unzip')
-RUN wget https://github.com/ringojs/ringojs/releases/download/v0.9/ringojs-0.9.zip \
-    && python -m zipfile -e ringojs-0.9.zip /opt/ \
-    && rm ringojs-0.9.zip \
+# Install RingoJS (Fetching the standard GitHub source archive which contains the runnable jar)
+RUN wget https://github.com/ringojs/ringojs/archive/refs/tags/v0.9.tar.gz -O ringojs.tar.gz \
+    && tar -xzf ringojs.tar.gz -C /opt/ \
+    && rm ringojs.tar.gz \
     && ln -s /opt/ringojs-0.9/bin/ringo /usr/local/bin/ringo
 
 # Install PhantomJS manually 
