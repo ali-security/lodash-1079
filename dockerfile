@@ -1,11 +1,15 @@
 # We use Ubuntu 14.04 because it is contemporaneous with Lodash 2.4.1
 FROM ubuntu:14.04
 
-# Use ONLY the main trusty archive to avoid 404s on missing update/security sub-directories
-RUN echo "deb http://old-releases.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" > /etc/apt/sources.list
-    
-# Ignore expired signatures and force install
-RUN apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --force-yes \
+# 1. Clear out any existing apt lists to prevent cache poisoning
+# 2. Inject a completely clean, minimal sources.list pointing ONLY to the surviving old-releases base
+RUN rm -rf /var/lib/apt/lists/* && \
+    echo "deb http://old-releases.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" > /etc/apt/sources.list && \
+    echo "deb-src http://old-releases.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
+
+# 3. Suppress GPG expiration errors and strictly allow unauthenticated packages (due to old certs)
+RUN apt-get -o Acquire::Check-Valid-Until=false update && \
+    apt-get install -y --allow-unauthenticated \
     wget curl git unzip build-essential python openjdk-7-jre-headless phantomjs \
     && rm -rf /var/lib/apt/lists/*
 
