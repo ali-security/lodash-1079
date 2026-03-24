@@ -1,5 +1,5 @@
 # Start from the official ancient Node.10 image. 
-FROM --platform=linux/amd64 node:0.10
+FROM node:0.10
 
 # Globally force curl and wget to ignore SSL errors for all subsequent commands (like nvm)
 RUN echo "insecure" > ~/.curlrc && echo "check-certificate = off" > ~/.wgetrc
@@ -16,10 +16,8 @@ ENV SAUCE_LABS=false
 ENV NVM_DIR=/usr/local/nvm
 RUN mkdir -p $NVM_DIR && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
-# Install the other ancient Node versions needed for the matrix
-# With .curlrc in place, this will successfully download the binaries instead of compiling!
+# Install Node 0.8 and 0.10 (Node 0.6 is omitted because 64-bit binaries do not exist)
 RUN . $NVM_DIR/nvm.sh \
-    && nvm install 0.6 \
     && nvm install 0.8 \
     && nvm install 0.10 \
     && nvm alias default 0.10
