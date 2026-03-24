@@ -22,7 +22,7 @@ RUN . $NVM_DIR/nvm.sh \
     && nvm install 0.10 \
     && nvm alias default 0.10
 
-# Install Narwhal (switched to .tar.gz to avoid needing 'unzip')
+# Install Narwhal 
 RUN wget https://github.com/280north/narwhal/archive/refs/tags/v0.3.2.tar.gz \
     && tar -xzf v0.3.2.tar.gz -C /opt/ && rm v0.3.2.tar.gz \
     && ln -s /opt/narwhal-0.3.2/bin/narwhal /usr/local/bin/narwhal
@@ -33,12 +33,13 @@ RUN mkdir /opt/rhino-1.7R5 \
     && echo '#!/bin/sh\njava -jar /opt/rhino-1.7R5/js.jar $@' > /usr/local/bin/rhino \
     && chmod +x /usr/local/bin/rhino
 
-# Install RingoJS (switched to .tar.gz to avoid needing 'unzip')
-RUN wget https://github.com/ringojs/ringojs/releases/download/v0.9/ringojs-0.9.tar.gz \
-    && tar -xzf ringojs-0.9.tar.gz -C /opt/ && rm ringojs-0.9.tar.gz \
+# Install RingoJS (using Python to unzip since the container lacks 'unzip')
+RUN wget https://github.com/ringojs/ringojs/releases/download/v0.9/ringojs-0.9.zip \
+    && python -m zipfile -e ringojs-0.9.zip /opt/ \
+    && rm ringojs-0.9.zip \
     && ln -s /opt/ringojs-0.9/bin/ringo /usr/local/bin/ringo
 
-# Install PhantomJS manually (using a mirror that provides .tar.gz so we don't need bzip2)
+# Install PhantomJS manually 
 RUN wget https://github.com/Medium/phantomjs/releases/download/v1.9.19/phantomjs-1.9.8-linux-x86_64.tar.bz2 -O phantomjs.tar.bz2 \
     && tar -xjf phantomjs.tar.bz2 \
     && mv phantomjs-1.9.8-linux-x86_64 /usr/local/share/phantomjs \
