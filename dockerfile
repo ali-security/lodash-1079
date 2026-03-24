@@ -2,16 +2,22 @@
 FROM ubuntu:14.04
 
 # 1. Clear out any existing apt lists to prevent cache poisoning
-# 2. Inject a completely clean, minimal sources.list pointing ONLY to the surviving old-releases base
+# 2. Inject a clean, minimal sources.list pointing ONLY to the surviving old-releases base 'main'
 RUN rm -rf /var/lib/apt/lists/* && \
-    echo "deb http://old-releases.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" > /etc/apt/sources.list && \
-    echo "deb-src http://old-releases.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
+    echo "deb http://old-releases.ubuntu.com/ubuntu/ trusty main restricted" > /etc/apt/sources.list
 
-# 3. Suppress GPG expiration errors and strictly allow unauthenticated packages (due to old certs)
+# 3. Suppress GPG expiration errors and strictly allow unauthenticated packages
 RUN apt-get -o Acquire::Check-Valid-Until=false update && \
     apt-get install -y --allow-unauthenticated \
-    wget curl git unzip build-essential python openjdk-7-jre-headless phantomjs \
+    wget curl git unzip bzip2 build-essential python openjdk-7-jre-headless libfontconfig1 libfreetype6 \
     && rm -rf /var/lib/apt/lists/*
+
+# Install PhantomJS manually (since the universe repo index is broken on old-releases)
+RUN wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.8-linux-x86_64.tar.bz2 && \
+    tar -xjf phantomjs-1.9.8-linux-x86_64.tar.bz2 && \
+    mv phantomjs-1.9.8-linux-x86_64 /usr/local/share/phantomjs && \
+    ln -s /usr/local/share/phantomjs/bin/phantomjs /usr/local/bin/phantomjs && \
+    rm phantomjs-1.9.8-linux-x86_64.tar.bz2
 
 # Install NVM
 ENV NVM_DIR=/usr/local/nvm
