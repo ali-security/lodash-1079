@@ -34,7 +34,7 @@ RUN mkdir /opt/rhino-1.7R5 \
     && chmod +x /usr/local/bin/rhino
 
 # Install RingoJS (Fixed the tag from 'v0.9' to '0.9')
-RUN wget https://github.com/ringojs/ringojs/archive/refs/tags/0.9.tar.gz -O ringojs.tar.gz \
+RUN wget https://github.com/ringo/ringojs/archive/refs/tags/v0.9.0.tar.gz -O ringojs.tar.gz \
     && tar -xzf ringojs.tar.gz -C /opt/ \
     && rm ringojs.tar.gz \
     && ln -s /opt/ringojs-0.9/bin/ringo /usr/local/bin/ringo
