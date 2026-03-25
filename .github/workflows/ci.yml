@@ -90,7 +90,7 @@ jobs:
               # NEW: Pack the artifact and move it to the mounted volume
               # ---------------------------------------------------
               npm pack
-              mv lodash-*.tgz ./artifact_out/
+              mv lodash-*.tgz /app/artifact_out/
             "
 
       # Upload the artifact to GitHub with a 1-day retention
