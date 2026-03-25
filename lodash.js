@@ -1557,6 +1557,14 @@
             result = source,
             value = safeGet(object, key);
 
+        // Prevent prototype pollution
+        if (key === 'constructor' && typeof source === 'function') {
+          return;
+        }
+        if (key == '__proto__') {
+          return;
+        }
+
         if (source && ((isArr = isArray(source)) || isPlainObject(source))) {
           // avoid merging previously merged cyclic sources
           var stackLength = stackA.length;
@@ -6678,7 +6686,9 @@
 
       // if `variable` is not specified, wrap a with-statement around the generated
       // code to add the data object to the top of the scope chain
-      var variable = options.variable,
+      // Like with sourceURL, we take care to not check the option's prototype,
+      // as this configuration is a code injection vector.
+      var variable = hasOwnProperty.call(options, 'variable') && options.variable,
           hasVariable = variable;
 
       if (!hasVariable) {
@@ -6709,7 +6719,10 @@
 
       // Use a sourceURL for easier debugging.
       // http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/#toc-sourceurl
-      var sourceURL = '\n/*\n//# sourceURL=' + (options.sourceURL || '/lodash/template/source[' + (templateCounter++) + ']') + '\n*/';
+      // The sourceURL gets injected into the source that's eval-ed, so be careful
+      // with lookup (in case of e.g. prototype pollution), and strip newlines if any.
+      // A newline wouldn't be a valid sourceURL anyway, and it'd enable code injection.
+      var sourceURL = '\n/*\n//# sourceURL=' + (hasOwnProperty.call(options, 'sourceURL') ? (options.sourceURL + '').replace(/[\r\n]/g, ' ') : '/lodash/template/source[' + (templateCounter++) + ']') + '\n*/';
 
       try {
         var result = Function(importsKeys, 'return ' + source + sourceURL).apply(undefined, importsValues);

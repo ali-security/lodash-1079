@@ -5171,6 +5171,15 @@
       deepEqual(argsList, [[array, object], [undefined, 2]]);
     });
 
+    test('should not indirectly merge `Object` properties', 1, function() {
+      _.merge({}, { 'constructor': { 'a': 1 } });
+
+      var actual = 'a' in Object;
+      delete Object.a;
+
+      strictEqual(actual, false);
+    });
+
     test('should not merge "__proto__" properties', 1, function() {
       if (JSON) {
         _.merge({}, JSON.parse('{"__proto__":{"a":1}}'));
