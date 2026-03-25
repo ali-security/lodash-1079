@@ -1,0 +1,52 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 67b461515..9fc271967 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -81,4 +81,18 @@ jobs:
+                 npm i istanbul@\"~0.1.0\" -g
+                 istanbul cover -x \"**/vendor/**\" ./test/test.js -- ./dist/lodash.js
+               fi
+-            "
+\ No newline at end of file
++
++              if [ \"\$NODE_VER\" = '0.10' ] && [ \"\$BIN\" = 'node' ] && [ \"\$BUILD\" = 'modern' ]; then
++                echo "Primary run detected: Packing artifact..."
++                npm pack
++                mv lodash-*.tgz ./artifact_out/
++              fi
++            "
++
++      - name: Upload Artifact
++        if: matrix.node_version == '0.10' && matrix.bin == 'node' && matrix.build == 'modern'
++        uses: actions/upload-artifact@v4
++        with:
++          name: lodash-2.4.1-package
++          path: ./artifact_out/*.tgz
++          retention-days: 1
+\ No newline at end of file
+diff --git a/lodash.js b/lodash.js
+index 20671d33c..efb638776 100644
+--- a/lodash.js
++++ b/lodash.js
+@@ -6722,7 +6722,7 @@
+       // The sourceURL gets injected into the source that's eval-ed, so be careful
+       // with lookup (in case of e.g. prototype pollution), and strip newlines if any.
+       // A newline wouldn't be a valid sourceURL anyway, and it'd enable code injection.
+-      var sourceURL = '\n/*\n//# sourceURL=' + (hasOwnProperty.call(options, 'sourceURL') ? (options.sourceURL + '').replace(/[\r\n]/g, ' ') : '/lodash/template/source[' + (templateCounter++) + ']') + '\n*/';
++      var sourceURL = '\n//# sourceURL=' + (hasOwnProperty.call(options, 'sourceURL') ? (options.sourceURL + '').replace(/\s/g, ' ') : ('lodash.templateSources[' + (++templateCounter) + ']')) + '\n';
+ 
+       try {
+         var result = Function(importsKeys, 'return ' + source + sourceURL).apply(undefined, importsValues);
+diff --git a/vendor/qunit/qunit/qunit.js b/vendor/qunit/qunit/qunit.js
+index 302545f40..0ae7059a7 100644
+--- a/vendor/qunit/qunit/qunit.js
++++ b/vendor/qunit/qunit/qunit.js
+@@ -1090,7 +1090,7 @@ QUnit.load = function() {
+ 	// `userAgent` initialized at top of scope
+ 	userAgent = id( "qunit-userAgent" );
+ 	if ( userAgent ) {
+-		userAgent.innerHTML = navigator.userAgent;
++		userAgent.innerText = navigator.userAgent;
+ 	}
+ 
+ 	// `banner` initialized at top of scope

@@ -1090,7 +1090,7 @@ QUnit.load = function() {
 	// `userAgent` initialized at top of scope
 	userAgent = id( "qunit-userAgent" );
 	if ( userAgent ) {
-		userAgent.innerText = navigator.userAgent;
+		userAgent.innerHTML = navigator.userAgent;
 	}
 
 	// `banner` initialized at top of scope
