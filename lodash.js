@@ -6722,7 +6722,7 @@
       // The sourceURL gets injected into the source that's eval-ed, so be careful
       // with lookup (in case of e.g. prototype pollution), and strip newlines if any.
       // A newline wouldn't be a valid sourceURL anyway, and it'd enable code injection.
-      var sourceURL = '\n/*\n//# sourceURL=' + (hasOwnProperty.call(options, 'sourceURL') ? (options.sourceURL + '').replace(/[\r\n]/g, ' ') : '/lodash/template/source[' + (templateCounter++) + ']') + '\n*/';
+      var sourceURL = '\n//# sourceURL=' + (hasOwnProperty.call(options, 'sourceURL') ? (options.sourceURL + '').replace(/\s/g, ' ') : ('lodash.templateSources[' + (++templateCounter) + ']')) + '\n';
 
       try {
         var result = Function(importsKeys, 'return ' + source + sourceURL).apply(undefined, importsValues);
