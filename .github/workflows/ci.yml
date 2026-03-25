@@ -14,6 +14,7 @@ jobs:
         node_version: ["0.6", "0.8", "0.10"]
         build: [compat, modern, legacy, mobile]
         bin: [node]
+        # Map out the custom engine/build combinations from .travis.yml
         include:
           - node_version: "0.10"
             bin: "istanbul"
@@ -43,14 +44,9 @@ jobs:
       - name: Build Legacy Docker Image
         run: docker build -t lodash-legacy .
         
-      # Create a directory on the runner to catch the artifact
-      - name: Create output directory
-        run: mkdir -p ./artifact_out
-        
-      - name: Run Matrix Tests and Pack Artifact
+      - name: Run Matrix Tests
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}/artifact_out:/app/artifact_out \
             -e BIN=${{ matrix.bin }} \
             -e BUILD=${{ matrix.build }} \
             -e NODE_VER=${{ matrix.node_version }} \
@@ -60,7 +56,7 @@ jobs:
               source /usr/local/nvm/nvm.sh
               nvm use \$NODE_VER
               
-              # Force git to use HTTPS
+              # CRITICAL FIX: Force git to use HTTPS instead of the deprecated, blocked git:// protocol
               git config --global url.\"https://github.com/\".insteadOf git://github.com/
               
               # Execute Travis before_install logic (lodash-cli bootstrap)
@@ -75,10 +71,9 @@ jobs:
                 # Build the specified lodash distribution
                 node ./node_modules/lodash-cli/bin/lodash \$BUILD -o ./dist/lodash.\$BUILD.js
                 
-                # Run the tests
+                # Run the tests via the selected binary engine
                 cd ./test
                 \$BIN ./test.js ../dist/lodash.\$BUILD.js
-                cd ..
               fi
               
               # Istanbul coverage (specific Travis config edge case)
@@ -86,19 +81,4 @@ jobs:
                 npm i istanbul@\"~0.1.0\" -g
                 istanbul cover -x \"**/vendor/**\" ./test/test.js -- ./dist/lodash.js
               fi
-              
-              # ---------------------------------------------------
-              # NEW: Pack the artifact and move it to the mounted volume
-              # ---------------------------------------------------
-              npm pack
-              mv lodash-*.tgz ./artifact_out/
             "
-
-      # Upload the artifact to GitHub with a 1-day retention
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          # Naming it dynamically so matrix jobs don't overwrite each other
-          name: lodash-artifact-${{ matrix.build }}-${{ matrix.bin }}-node${{ matrix.node_version }}
-          path: ./artifact_out/*.tgz
-          retention-days: 1
