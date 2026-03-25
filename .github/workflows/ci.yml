@@ -74,7 +74,6 @@ jobs:
                 # Run the tests via the selected binary engine
                 cd ./test
                 \$BIN ./test.js ../dist/lodash.\$BUILD.js
-                cd ..
               fi
               
               # Istanbul coverage (specific Travis config edge case)
@@ -82,15 +81,4 @@ jobs:
                 npm i istanbul@\"~0.1.0\" -g
                 istanbul cover -x \"**/vendor/**\" ./test/test.js -- ./dist/lodash.js
               fi
-
-              npm pack
-              mv lodash-*.tgz ./artifact_out/
             "
-            
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          # Naming it dynamically so matrix jobs don't overwrite each other
-          name: lodash-artifact-${{ matrix.build }}-${{ matrix.bin }}-node${{ matrix.node_version }}
-          path: ./artifact_out/*.tgz
-          retention-days: 1
