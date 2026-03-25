@@ -74,6 +74,7 @@ jobs:
                 # Run the tests via the selected binary engine
                 cd ./test
                 \$BIN ./test.js ../dist/lodash.\$BUILD.js
+                cd ..
               fi
               
               # Istanbul coverage (specific Travis config edge case)
@@ -81,4 +82,18 @@ jobs:
                 npm i istanbul@\"~0.1.0\" -g
                 istanbul cover -x \"**/vendor/**\" ./test/test.js -- ./dist/lodash.js
               fi
+
+              if [ \"\$NODE_VER\" = '0.10' ] && [ \"\$BIN\" = 'node' ] && [ \"\$BUILD\" = 'modern' ]; then
+                echo "Primary run detected: Packing artifact..."
+                npm pack
+                mv lodash-*.tgz ./artifact_out/
+              fi
             "
+
+      - name: Upload Artifact
+        if: matrix.node_version == '0.10' && matrix.bin == 'node' && matrix.build == 'modern'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lodash-2.4.1-package
+          path: ./artifact_out/*.tgz
+          retention-days: 1
