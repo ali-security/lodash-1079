@@ -65,7 +65,8 @@ jobs:
                 mkdir -p ./node_modules/lodash-cli/node_modules
                 cd ./node_modules/lodash-cli/node_modules/
                 ln -s ../../../ ./lodash
-                cd ../ && npm i . && cd ../../
+                # ADDED --force to bypass fsevents OS mismatch on npm v2
+                cd ../ && npm i --force . && cd ../../
                 
                 # Build the specified lodash distribution
                 node ./node_modules/lodash-cli/bin/lodash \$BUILD -o ./dist/lodash.\$BUILD.js
