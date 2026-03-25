@@ -1516,11 +1516,34 @@
      * @param {Array} [stackB=[]] Associates values with source counterparts.
      */
     function baseMerge(object, source, callback, stackA, stackB) {
+      /**
+       * Gets the value at `key`, unless `key` is "__proto__" or "prototype".
+       *
+       * @private
+       * @param {Object} object The object to query.
+       * @param {string} key The key of the property to get.
+       * @returns {*} Returns the property value.
+       */
+      function safeGet(object, key) {
+        if (key == '__proto__') {
+          return;
+        }
+
+        var value = object[key];
+
+        if (key == 'prototype' &&
+            value === objectProto) {
+          return;
+        }
+
+        return value;
+      }
+
       (isArray(source) ? forEach : forOwn)(source, function(source, key) {
         var found,
             isArr,
             result = source,
-            value = object[key];
+            value = safeGet(object, key);
 
         if (source && ((isArr = isArray(source)) || isPlainObject(source))) {
           // avoid merging previously merged cyclic sources
@@ -1565,7 +1588,10 @@
             value = result;
           }
         }
-        object[key] = value;
+        if (key != '__proto__' &&
+            !(key == 'prototype' && value === objectProto)) {
+          object[key] = value;
+        }
       });
     }
 

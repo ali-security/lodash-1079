@@ -5170,6 +5170,28 @@
 
       deepEqual(argsList, [[array, object], [undefined, 2]]);
     });
+
+    test('should not merge "__proto__" properties', 1, function() {
+      if (JSON) {
+        _.merge({}, JSON.parse('{"__proto__":{"a":1}}'));
+
+        var actual = "a" in Object.prototype;
+        delete Object.prototype.a;
+
+        ok(!actual);
+      } else {
+        skipAssert();
+      }
+    });
+
+    test('should not merge `Object.prototype` properties', 1, function() {
+      _.merge({}, { 'constructor': { 'prototype': { 'a': 1 } } });
+
+      var actual = 'a' in Object.prototype;
+      delete Object.prototype.a;
+
+      ok(!actual);
+    });
   }(1, 2, 3));
 
   /*--------------------------------------------------------------------------*/
