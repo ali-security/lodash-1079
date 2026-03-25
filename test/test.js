@@ -7174,6 +7174,16 @@
       }
     });
 
+    test('should forbid code injection through the "variable" options', 1, function() {
+      var isError = false;
+      try {
+        _.template('', null, { 'variable': '){console.log(process.env)}; with(obj' });
+      } catch(e) {
+        isError = true;
+      }
+      ok(isError, 'Should throw an error when variable contains invalid characters');
+    });
+
     test('should not error with IE conditional comments enabled (test with development build)', 1, function() {
       var compiled = _.template(''),
           pass = true;

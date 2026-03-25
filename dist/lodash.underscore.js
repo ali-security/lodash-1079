@@ -30,6 +30,18 @@
   /** Used to match unescaped characters in compiled string literals */
   var reUnescapedString = /['\n\r\t\u2028\u2029\\]/g;
 
+  /**
+   * Used to validate the `variable` option in `_.template` variable.
+   *
+   * Forbids characters which could potentially change the meaning of the function argument definition:
+   * - "()" (modification of function parameters)
+   * - "=" (default value)
+   * - "[]{}," (destructuring of function parameters)
+   * - "/" (beginning of a comment)
+   * - whitespace
+   */
+  var reForbiddenIdentifierChars = /[()=,{}\[\]\/\s]/;
+
   /** `Object#toString` result shortcuts */
   var argsClass = '[object Arguments]',
       arrayClass = '[object Array]',
@@ -4572,6 +4584,11 @@
     if (!variable) {
       variable = 'obj';
       source = 'with (' + variable + ' || {}) {\n' + source + '\n}\n';
+    }
+    // Throw an error if a forbidden character was found in `variable`, to prevent
+    // potential command injection attacks.
+    else if (reForbiddenIdentifierChars.test(variable)) {
+      throw new Error('Invalid `variable` option passed into `_.template`');
     }
     source = 'function(' + variable + ') {\n' +
       "var __t, __p = '', __j = Array.prototype.join;\n" +
