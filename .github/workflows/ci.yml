@@ -56,6 +56,9 @@ jobs:
               source /usr/local/nvm/nvm.sh
               nvm use \$NODE_VER
               
+              # CRITICAL FIX: Force git to use HTTPS instead of the deprecated, blocked git:// protocol
+              git config --global url.\"https://github.com/\".insteadOf git://github.com/
+              
               # Execute Travis before_install logic (lodash-cli bootstrap)
               if [ \"\$BUILD\" != 'false' ]; then
                 git clone --depth=10 --branch=master git://github.com/lodash/lodash-cli.git ./node_modules/lodash-cli || true
