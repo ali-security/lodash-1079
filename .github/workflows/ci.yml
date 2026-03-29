@@ -87,17 +87,21 @@ jobs:
               fi
               
               # ---------------------------------------------------
-              # NEW: Pack the artifact and move it to the mounted volume
+              # PACKAGING: Only pack on the primary Node 0.10 run
               # ---------------------------------------------------
-              npm pack
-              mv lodash-*.tgz /app/artifact_out/
+              if [ \"\$NODE_VER\" = '0.10' ] && [ \"\$BIN\" = 'node' ] && [ \"\$BUILD\" = 'modern' ]; then
+                echo \"Primary run detected: Packing artifact...\"
+                node ./node_modules/lodash-cli/bin/lodash build
+                npm pack
+                mv lodash-*.tgz /app/artifact_out/
+              fi
             "
 
-      # Upload the artifact to GitHub with a 1-day retention
+      # Upload the artifact ONLY on the exact same matrix run
       - name: Upload Artifact
+        if: matrix.node_version == '0.10' && matrix.bin == 'node' && matrix.build == 'modern'
         uses: actions/upload-artifact@v4
         with:
-          # Naming it dynamically so matrix jobs don't overwrite each other
-          name: lodash-artifact-${{ matrix.build }}-${{ matrix.bin }}-node${{ matrix.node_version }}
+          name: lodash-2.4.1-package
           path: ./artifact_out/*.tgz
           retention-days: 1
