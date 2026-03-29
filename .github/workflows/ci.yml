@@ -65,7 +65,7 @@ jobs:
               
               # Execute Travis before_install logic (lodash-cli bootstrap)
               if [ \"\$BUILD\" != 'false' ]; then
-                git clone --depth=10 --branch=master git://github.com/lodash/lodash-cli.git ./node_modules/lodash-cli || true
+                npm install lodash-cli
                 mkdir -p ./node_modules/lodash-cli/node_modules
                 cd ./node_modules/lodash-cli/node_modules/
                 ln -s ../../../ ./lodash
@@ -90,9 +90,14 @@ jobs:
               # PACKAGING: Only pack on the primary Node 0.10 run
               # ---------------------------------------------------
               if [ \"\$NODE_VER\" = '0.10' ] && [ \"\$BIN\" = 'node' ] && [ \"\$BUILD\" = 'modern' ]; then
-                echo \"Primary run detected: Packing artifact...\"
-                node ./node_modules/lodash-cli/bin/lodash build
+                node ./node_modules/lodash-cli/bin/lodash compat -o ./dist/lodash.compat.js
+                node ./node_modules/lodash-cli/bin/lodash modern -o ./dist/lodash.js
+                npm i lodash-cli@2.4.2 # this used for lodash.underscore
+                node ./node_modules/lodash-cli/bin/lodash underscore -o ./dist/lodash.underscore.js
+                npm i --registry=https://:2015-06-23T07:00:00.000000Z@time-machines-npm.sealsecurity.io/ lodash-cli
+                node ./node_modules/lodash-cli/node_modules/uglify-js/bin/uglifyjs ./dist/lodash.underscore.js -o ./dist/lodash.underscore.min.js --compress --mangle --comments '/Copyright|license/i'
                 npm pack
+
                 mv lodash-*.tgz /app/artifact_out/
               fi
             "
