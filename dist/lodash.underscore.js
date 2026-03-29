@@ -1054,6 +1054,7 @@
       var iterable = arguments[argsIndex];
       if (iterable) {
         for (var key in iterable) {
+          if (key === '__proto__') { continue; }
           object[key] = iterable[key];
         }
       }
@@ -1135,6 +1136,7 @@
       var iterable = arguments[argsIndex];
       if (iterable) {
         for (var key in iterable) {
+          if (key === '__proto__') { continue; }
           if (typeof object[key] == 'undefined') {
             object[key] = iterable[key];
           }
